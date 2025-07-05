@@ -1,0 +1,7 @@
+## Interface: 11200
+## Title: [ |cFFFFFFFFWM|r ] |cFF11A6ECT-RestedXP|r |cFF7FFF7Fv1.0.0 (Beta)|r
+## Author: Mikhail Palagin (Wht Mst)
+## Version: 1.0.0 Beta
+## Notes: |cFF11A6ECT-RestedXP|r is an addon for tracking 100% rested XP for |cff00ff00Turtle WoW|r. Made with love by Wht Mst.
+
+T-RestedXP.lua
