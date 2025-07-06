@@ -63,12 +63,12 @@ local function GetRestedXPPercent()
     local exhaustion = GetXPExhaustion()
     local maxXP = UnitXPMax("player")
     
-    -- Если нет данных о максимальном XP - возвращаем nil
+    -- If no max XP data - return nil / Если нет данных о максимальном XP - возвращаем nil
     if not maxXP or maxXP <= 0 then
         return nil
     end
     
-    -- Если нет exhaustion (рестеда) - это означает 0%
+    -- If no exhaustion (rested) - this means 0% / Если нет exhaustion (рестеда) - это означает 0%
     if not exhaustion or exhaustion <= 0 then
         return 0
     end
@@ -161,7 +161,7 @@ local function SendRestedAlert(msg, soundName)
     end
 end
 
--- Функция для остановки таймера 0% рестеда
+-- Function to stop 0% rested timer / Функция для остановки таймера 0% рестеда
 local function StopZeroRestedTimer()
     if zeroRestedTimerFrame then
         zeroRestedTimerFrame:SetScript("OnUpdate", nil)
@@ -169,9 +169,9 @@ local function StopZeroRestedTimer()
     end
 end
 
--- Функция для запуска таймера 0% рестеда
+-- Function to start 0% rested timer / Функция для запуска таймера 0% рестеда
 local function StartZeroRestedTimer()
-    -- Сначала останавливаем существующий таймер
+    -- First stop existing timer / Сначала останавливаем существующий таймер
     StopZeroRestedTimer()
     
     zeroRestedTimerFrame = CreateFrame("Frame")
@@ -186,9 +186,9 @@ local function StartZeroRestedTimer()
             end
         end
         
-        -- Останавливаем таймер если достигли лимита оповещений
+        -- Stop timer if reached notification limit / Останавливаем таймер если достигли лимита оповещений
         if zeroRestedCount >= notifyCountZero then
-            -- Используем функцию вместо прямого обращения
+            -- Use function instead of direct access / Используем функцию вместо прямого обращения
             StopZeroRestedTimer()
         end
     end)
@@ -221,16 +221,16 @@ local function CheckRestedXP()
         return
     end
 
-    -- 0% rested XP: запускаем таймер для повторных оповещений
+    -- 0% rested XP: start timer for repeated notifications / 0% rested XP: запускаем таймер для повторных оповещений
     if percent <= 0.1 then
         if not wasZeroRested then
-            -- Первое оповещение сразу
+            -- First notification immediately / Первое оповещение сразу
             SendRestedAlert(noRestedMsg, soundNameZero)
             lastZeroRestedTime = now
             zeroRestedCount = 1
             wasZeroRested = true
             
-            -- Запускаем таймер для следующих оповещений
+            -- Start timer for next notifications / Запускаем таймер для следующих оповещений
             StartZeroRestedTimer()
         end
         wasFullRested = false
