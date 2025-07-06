@@ -26,9 +26,33 @@ RU: **T-RestedXP** — это простой аддон для отслежив�
 
 # T-RestedXP: Settings / Настройки
 
-EN: The addon announces when you reach 100% rested XP or 0% rested XP. You can configure the alert messages and the chat channel by editing the `T-RestedXP.lua` file. Default channel is `"SELF"` (only you see the message), but you can set `"SAY"`, `"PARTY"`, `"RAID"`, `"GUILD"` or `"YELL"`.
+EN: The addon announces when you reach 100% rested XP or 0% rested XP. You can configure the alert messages, chat channel, sound, and display options by editing the `T-RestedXP.lua` file. Main settings:
 
-RU: Аддон сообщает, когда вы достигаете 100% rested XP или 0% rested XP. Сообщения и канал оповещения можно изменить в файле `T-RestedXP.lua`. По умолчанию канал `"SELF"` (видно только вам), но можно выбрать `"SAY"`, `"PARTY"`, `"RAID"`, `"GUILD"` или `"YELL"`.
+- `fullRestedMsg`: message for 100% rested XP (default: `=== 100% RESTED XP / 100% ОТДЫХА ===`)
+- `noRestedMsg`: message for 0% rested XP (default: `=== NO RESTED XP / НЕТ ОТДЫХА ===`)
+- `chatChannel`: channel for alerts (`SELF`, `EMOTE`, `SAY`, `PARTY`, `RAID`, `GUILD`, `YELL`)
+- `notifyIntervalZero`: interval between 0% alerts (seconds)
+- `notifyCountZero`: max 0% alerts in a row
+- `playSound`: play sound on alert (true/false)
+- `soundNameFull`: sound for 100% rested XP (default: `QUESTCOMPLETED`)
+- `soundNameZero`: sound for 0% rested XP (default: `RaidWarning`)
+- `showCenter`: show alert in the center of the screen (true/false)
+- `centerMessageTime`: time to show center message (seconds)
+- `maxLevel`: max player level (default: 60)
+
+RU: Аддон сообщает, когда вы достигаете 100% или 0% rested XP. Все параметры можно изменить в файле `T-RestedXP.lua`:
+
+- `fullRestedMsg`: сообщение для 100% rested XP (по умолчанию: `=== 100% RESTED XP / 100% ОТДЫХА ===`)
+- `noRestedMsg`: сообщение для 0% rested XP (по умолчанию: `=== NO RESTED XP / НЕТ ОТДЫХА ===`)
+- `chatChannel`: канал оповещений (`SELF`, `EMOTE`, `SAY`, `PARTY`, `RAID`, `GUILD`, `YELL`)
+- `notifyIntervalZero`: интервал между оповещениями о 0% (сек)
+- `notifyCountZero`: максимум оповещений о 0% подряд
+- `playSound`: воспроизводить звук при оповещении (true/false)
+- `soundNameFull`: звук для 100% rested XP (по умолчанию: `QUESTCOMPLETED`)
+- `soundNameZero`: звук для 0% rested XP (по умолчанию: `RaidWarning`)
+- `showCenter`: показывать оповещение по центру экрана (true/false)
+- `centerMessageTime`: время показа сообщения по центру (сек)
+- `maxLevel`: максимальный уровень игрока (по умолчанию: 60)
 
 ---
 
