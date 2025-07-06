@@ -8,17 +8,23 @@ RU: **T-RestedXP** — это простой аддон для отслежив�
 
 # T-RestedXP: Download / Скачать
 
+**If you use Turtle WoW Launcher:**
+Just go to the Addons section, click "Add new addon", paste the link `https://github.com/whtmst/T-RestedXP` and click Install. That's all, nothing else is required.
+
+**Если вы используете Turtle WoW Launcher:**
+Просто зайдите в раздел аддоны, нажмите "Добавить новый аддон", вставьте ссылку `https://github.com/whtmst/T-RestedXP` и нажмите установить. Больше ничего делать не нужно.
+
 ### Installation (Turtle WoW)
 1. Download: **[Latest Version](https://github.com/whtmst/t-restedxp/archive/master.zip)**
 2. Unpack the Zip file `t-restedxp-main.zip`
-3. Find the `T-RestedXP` folder inside `t-restedxp-main`
+3. Rename the extracted folder: remove `-main` from the folder name so it becomes `T-RestedXP`
 4. Copy the `T-RestedXP` folder into `\Interface\AddOns`
 5. Restart the game
 
 ### Установка (Turtle WoW)
 1. Скачайте: **[Последняя версия](https://github.com/whtmst/t-restedxp/archive/master.zip)**
 2. Распакуйте Zip-файл `t-restedxp-main.zip`
-3. Найдите папку `T-RestedXP` внутри папки `t-restedxp-main`
+3. Переименуйте распакованную папку: удалите `-main` в названии, чтобы получилось `T-RestedXP`
 4. Скопируйте папку `T-RestedXP` в `\Interface\AddOns`
 5. Перезапустите игру
 
