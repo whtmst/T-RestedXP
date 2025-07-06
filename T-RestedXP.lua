@@ -1,6 +1,6 @@
 --[[
 T-RestedXP - addon for tracking 100% rested XP in WoW 1.12
-T-RestedXP - аддон для отслеживания 100% rested XP в WoW 1.12
+T-RestedXP - аддон для отслеживания 100% RESTED XP в WoW 1.12
 
 Addon GitHub link: https://github.com/whtmst/t-restedxp
 
@@ -15,16 +15,16 @@ Compatibility:
 local fullRestedMsg = "=== 100% RESTED XP / 100% ОТДЫХА ==="  -- 100% rested XP message alert / Сообщение при 100% rested XP
 local noRestedMsg = "=== NO RESTED XP / НЕТ ОТДЫХА ==="      -- 0% rested XP message alert / Сообщение при 0% rested XP
 local chatChannel = "EMOTE"                       -- Announce channel / Канал анонса ("EMOTE", "SAY", "PARTY", "RAID", "GUILD" или "YELL")
-local notifyIntervalFull = 60                    -- Interval between 100% alerts (seconds) / Интервал между оповещениями о 100% (сек)
 local notifyIntervalZero = 20                    -- Interval between 0% alerts (seconds) / Интервал между оповещениями о 0% (сек)
 local notifyCountZero = 3                        -- Max 0% alerts in a row / Максимум оповещений о 0% подряд
 local playSound = true                           -- Play sound on alert / Воспроизводить звук при оповещении
-local soundName = "LEVELUP"                      -- Sound name / Имя звука
+local soundNameFull = "QUESTCOMPLETED"                -- Sound for 100% rested XP / Звук для 100%
+local soundNameZero = "RaidWarning"         -- Sound for 0% rested XP / Звук для 0%
 local showCenter = true                          -- Show alert in center / Показывать оповещение по центру экрана
 local maxLevel = 60                              -- Max player level / Максимальный уровень игрока
+local centerMessageTime = 3 -- Time to show center message (seconds) / Время показа сообщения по центру (сек)
 
 -- INTERNAL STATE / ВНУТРЕННЕЕ СОСТОЯНИЕ
-local lastFullRestedTime = 0
 local lastZeroRestedTime = 0
 local zeroRestedCount = 0
 local wasFullRested = false
@@ -45,15 +45,60 @@ local function GetRestedXPPercent()
     return nil
 end
 
+-- Custom center message frame / Кастомный фрейм для сообщений по центру
+local restedXPMessageFrame = CreateFrame("Frame", "T_RestedXP_MessageFrame", UIParent)
+restedXPMessageFrame:SetWidth(800)
+restedXPMessageFrame:SetHeight(120)
+restedXPMessageFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 180) -- поднято вверх
+restedXPMessageFrame:Hide()
+
+local restedXPFontString = restedXPMessageFrame:CreateFontString(nil, "OVERLAY")
+restedXPFontString:SetFont("Interface\\AddOns\\T-RestedXP\\fonts\\ARIALN.ttf", 96, "OUTLINE")
+restedXPFontString:SetPoint("CENTER", restedXPMessageFrame, "CENTER", 0, 0)
+restedXPFontString:SetTextColor(1, 1, 0)
+
+local function ShowRestedXPMessage(msg)
+    -- Сброс предыдущего состояния
+    restedXPMessageFrame:SetScript("OnUpdate", nil)
+    restedXPMessageFrame:Hide()
+    
+    -- Установка нового сообщения и состояния
+    restedXPFontString:SetText(msg)
+    restedXPMessageFrame:SetAlpha(1)
+    restedXPMessageFrame:Show()
+
+    -- Сохраняем время начала показа
+    restedXPMessageFrame.startTime = GetTime()
+    restedXPMessageFrame.showDuration = centerMessageTime
+    restedXPMessageFrame.fadeDuration = 1
+
+    restedXPMessageFrame:SetScript("OnUpdate", function(frame, elapsed)
+        local currentTime = GetTime()
+        local timeElapsed = currentTime - restedXPMessageFrame.startTime
+        local totalDuration = restedXPMessageFrame.showDuration + restedXPMessageFrame.fadeDuration
+
+        if timeElapsed >= totalDuration then
+            -- Время вышло, скрываем фрейм
+            restedXPMessageFrame:Hide()
+            restedXPMessageFrame:SetScript("OnUpdate", nil)
+            restedXPMessageFrame.startTime = nil
+        elseif timeElapsed >= restedXPMessageFrame.showDuration then
+            -- Фаза затухания
+            local fadeProgress = (timeElapsed - restedXPMessageFrame.showDuration) / restedXPMessageFrame.fadeDuration
+            restedXPMessageFrame:SetAlpha(1 - fadeProgress)
+        end
+    end)
+end
+
 -- Send alert to chat and/or center / Отправить оповещение в чат и/или по центру
-local function SendRestedAlert(msg)
+local function SendRestedAlert(msg, soundName)
     if chatChannel == "SELF" then
         DEFAULT_CHAT_FRAME:AddMessage(msg)
     else
         SendChatMessage(msg, chatChannel)
     end
-    if showCenter and UIErrorsFrame then
-        UIErrorsFrame:AddMessage(msg, 1, 1, 0, 1, 3)
+    if showCenter then
+        ShowRestedXPMessage(msg)
     end
     if playSound and soundName then
         PlaySound(soundName)
@@ -74,11 +119,10 @@ local function CheckRestedXP()
         return
     end
 
-    -- 100% rested XP
+    -- 100% rested XP: only one alert on entering state / 100% rested XP: только одно оповещение при входе в состояние
     if percent >= 99.9 then
-        if not wasFullRested or (now - lastFullRestedTime) >= notifyIntervalFull then
-            SendRestedAlert(fullRestedMsg)
-            lastFullRestedTime = now
+        if not wasFullRested then
+            SendRestedAlert(fullRestedMsg, soundNameFull)
             wasFullRested = true
         end
         wasZeroRested = false
@@ -86,13 +130,14 @@ local function CheckRestedXP()
         return
     end
 
-    -- 0% rested XP
+    -- 0% rested XP: up to 3 alerts with interval, then no more until state changes / 0% rested XP: максимум 3 оповещения с интервалом, далее не оповещать до смены состояния
     if percent <= 0.1 then
         if not wasZeroRested then
             zeroRestedCount = 0
+            lastZeroRestedTime = 0
         end
         if zeroRestedCount < notifyCountZero and (now - lastZeroRestedTime) >= notifyIntervalZero then
-            SendRestedAlert(noRestedMsg)
+            SendRestedAlert(noRestedMsg, soundNameZero)
             lastZeroRestedTime = now
             zeroRestedCount = zeroRestedCount + 1
         end
