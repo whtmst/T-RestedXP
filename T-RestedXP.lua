@@ -39,10 +39,17 @@ end
 local function GetRestedXPPercent()
     local exhaustion = GetXPExhaustion()
     local maxXP = UnitXPMax("player")
-    if exhaustion and maxXP and maxXP > 0 then
-        return (exhaustion / (maxXP * 1.5)) * 100
+    if not exhaustion or not maxXP or maxXP <= 0 or exhaustion < 0 then
+        return nil
     end
-    return nil
+    local percent = (exhaustion / (maxXP * 1.5)) * 100
+    return math.min(percent, 100) -- Защита от значений > 100%
+end
+
+-- Защита от повторного создания фрейма
+if T_RestedXP_MessageFrame then
+    T_RestedXP_MessageFrame:Hide()
+    T_RestedXP_MessageFrame = nil
 end
 
 -- Custom center message frame / Кастомный фрейм для сообщений по центру
@@ -53,7 +60,12 @@ restedXPMessageFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 180) -- подн�
 restedXPMessageFrame:Hide()
 
 local restedXPFontString = restedXPMessageFrame:CreateFontString(nil, "OVERLAY")
-restedXPFontString:SetFont("Interface\\AddOns\\T-RestedXP\\fonts\\ARIALN.ttf", 96, "OUTLINE")
+-- Добавь проверку перед установкой шрифта
+local fontPath = "Interface\\AddOns\\T-RestedXP\\fonts\\ARIALN.ttf"
+if not restedXPFontString:SetFont(fontPath, 96, "OUTLINE") then
+    -- Фоллбэк на стандартный шрифт
+    restedXPFontString:SetFont("Fonts\\FRIZQT__.TTF", 96, "OUTLINE")
+end
 restedXPFontString:SetPoint("CENTER", restedXPMessageFrame, "CENTER", 0, 0)
 restedXPFontString:SetTextColor(1, 1, 0)
 
@@ -94,9 +106,23 @@ end
 local function SendRestedAlert(msg, soundName)
     if chatChannel == "SELF" then
         DEFAULT_CHAT_FRAME:AddMessage(msg)
-    else
-        SendChatMessage(msg, chatChannel)
+    elseif chatChannel then
+        -- Проверка на валидность канала
+        local validChannels = {"EMOTE", "SAY", "PARTY", "RAID", "GUILD", "YELL"}
+        local isValidChannel = false
+        for _, channel in ipairs(validChannels) do
+            if chatChannel == channel then
+                isValidChannel = true
+                break
+            end
+        end
+        if isValidChannel then
+            SendChatMessage(msg, chatChannel)
+        else
+            DEFAULT_CHAT_FRAME:AddMessage(msg)
+        end
     end
+    
     if showCenter then
         ShowRestedXPMessage(msg)
     end
@@ -182,7 +208,6 @@ SlashCmdList["TRESTEDXP"] = function()
     end
 end
 
--- ПРАВИЛЬНО
 -- Slash command for test 0% rested XP / Слэш-команда для теста 0% rested XP
 SLASH_TRESTEDXPTESTZERO1 = "/trestedxp-test-0"
 SlashCmdList["TRESTEDXPTESTZERO"] = function()
@@ -203,4 +228,17 @@ SlashCmdList["TRESTEDXPTESTFULL"] = function()
     DEFAULT_CHAT_FRAME:AddMessage("Test: forced 100% rested XP / Тест: принудительно 100% отдыха")
 end
 
--- End of file / Конец
+-- Cleanup при выгрузке аддона
+local cleanupFrame = CreateFrame("Frame")
+cleanupFrame:RegisterEvent("ADDON_LOADED")
+cleanupFrame:RegisterEvent("PLAYER_LOGOUT")
+cleanupFrame:SetScript("OnEvent", function(self, event, addonName)
+    if event == "PLAYER_LOGOUT" or (event == "ADDON_LOADED" and addonName == "T-RestedXP") then
+        if restedXPMessageFrame then
+            restedXPMessageFrame:SetScript("OnUpdate", nil)
+            restedXPMessageFrame:Hide()
+        end
+    end
+end)
+
+-- End of file / Конец файла
