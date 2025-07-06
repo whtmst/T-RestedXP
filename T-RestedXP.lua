@@ -51,6 +51,7 @@ local lastZeroRestedTime = 0
 local zeroRestedCount = 0
 local wasFullRested = false
 local wasZeroRested = false
+local zeroRestedTimerFrame = nil
 
 -- Returns true if player is max level / Возвращает true, если игрок максимального уровня
 local function IsPlayerMaxLevel()
@@ -61,11 +62,18 @@ end
 local function GetRestedXPPercent()
     local exhaustion = GetXPExhaustion()
     local maxXP = UnitXPMax("player")
-    if not exhaustion or not maxXP or maxXP <= 0 or exhaustion < 0 then
+    
+    -- Если нет данных о максимальном XP - возвращаем nil
+    if not maxXP or maxXP <= 0 then
         return nil
     end
+    
+    -- Если нет exhaustion (рестеда) - это означает 0%
+    if not exhaustion or exhaustion <= 0 then
+        return 0
+    end
+    
     local percent = (exhaustion / (maxXP * 1.5)) * 100
-    -- Protection from values > 100% / Защита от значений > 100%
     return math.min(percent, 100)
 end
 
@@ -153,6 +161,39 @@ local function SendRestedAlert(msg, soundName)
     end
 end
 
+-- Функция для остановки таймера 0% рестеда
+local function StopZeroRestedTimer()
+    if zeroRestedTimerFrame then
+        zeroRestedTimerFrame:SetScript("OnUpdate", nil)
+        zeroRestedTimerFrame = nil
+    end
+end
+
+-- Функция для запуска таймера 0% рестеда
+local function StartZeroRestedTimer()
+    -- Сначала останавливаем существующий таймер
+    StopZeroRestedTimer()
+    
+    zeroRestedTimerFrame = CreateFrame("Frame")
+    zeroRestedTimerFrame:SetScript("OnUpdate", function(self, elapsed)
+        local now = GetTime()
+        if zeroRestedCount < notifyCountZero and (now - lastZeroRestedTime) >= notifyIntervalZero then
+            local percent = GetRestedXPPercent()
+            if percent ~= nil and percent <= 0.1 then
+                SendRestedAlert(noRestedMsg, soundNameZero)
+                lastZeroRestedTime = now
+                zeroRestedCount = zeroRestedCount + 1
+            end
+        end
+        
+        -- Останавливаем таймер если достигли лимита оповещений
+        if zeroRestedCount >= notifyCountZero then
+            -- Используем функцию вместо прямого обращения
+            StopZeroRestedTimer()
+        end
+    end)
+end
+
 -- Main event handler / Основная обработка событий
 local function CheckRestedXP()
     if IsPlayerMaxLevel() then return end
@@ -164,10 +205,11 @@ local function CheckRestedXP()
         wasFullRested = false
         wasZeroRested = false
         zeroRestedCount = 0
+        StopZeroRestedTimer()
         return
     end
 
-    -- 100% rested XP: only one alert on entering state / 100% rested XP: только одно оповещение при входе в состояние
+    -- 100% rested XP: only one alert on entering state
     if percent >= 99.9 then
         if not wasFullRested then
             SendRestedAlert(fullRestedMsg, soundNameFull)
@@ -175,29 +217,31 @@ local function CheckRestedXP()
         end
         wasZeroRested = false
         zeroRestedCount = 0
+        StopZeroRestedTimer()
         return
     end
 
-    -- 0% rested XP: up to 3 alerts with interval, then no more until state changes / 0% rested XP: максимум 3 оповещения с интервалом, далее не оповещать до смены состояния
+    -- 0% rested XP: запускаем таймер для повторных оповещений
     if percent <= 0.1 then
         if not wasZeroRested then
-            zeroRestedCount = 0
-            lastZeroRestedTime = 0
-        end
-        if zeroRestedCount < notifyCountZero and (now - lastZeroRestedTime) >= notifyIntervalZero then
+            -- Первое оповещение сразу
             SendRestedAlert(noRestedMsg, soundNameZero)
             lastZeroRestedTime = now
-            zeroRestedCount = zeroRestedCount + 1
+            zeroRestedCount = 1
+            wasZeroRested = true
+            
+            -- Запускаем таймер для следующих оповещений
+            StartZeroRestedTimer()
         end
-        wasZeroRested = true
         wasFullRested = false
         return
     end
 
-    -- Reset state if in between / Сброс состояния если между 0% и 100%
+    -- Reset state if in between
     wasFullRested = false
     wasZeroRested = false
     zeroRestedCount = 0
+    StopZeroRestedTimer()
 end
 
 -- Event frame setup / Создание фрейма событий
@@ -215,7 +259,7 @@ SLASH_TRESTEDXP1 = "/trestedxp"
 SlashCmdList["TRESTEDXP"] = function()
     local percent = GetRestedXPPercent()
     local msg
-    if percent then
+    if percent and percent > 0 then
         msg = string.format("Rested XP: %.1f%% / Отдых: %.1f%%", percent, percent)
         DEFAULT_CHAT_FRAME:AddMessage(msg)
         if showCenter and UIErrorsFrame then
@@ -256,6 +300,7 @@ cleanupFrame:RegisterEvent("ADDON_LOADED")
 cleanupFrame:RegisterEvent("PLAYER_LOGOUT")
 cleanupFrame:SetScript("OnEvent", function(self, event, addonName)
     if event == "PLAYER_LOGOUT" or (event == "ADDON_LOADED" and addonName == "T-RestedXP") then
+        StopZeroRestedTimer()
         if restedXPMessageFrame then
             restedXPMessageFrame:SetScript("OnUpdate", nil)
             restedXPMessageFrame:Hide()
