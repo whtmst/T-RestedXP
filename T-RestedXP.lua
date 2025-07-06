@@ -12,17 +12,39 @@ Compatibility:
 --]]
 
 -- SETTINGS / НАСТРОЙКИ
-local fullRestedMsg = "=== 100% RESTED XP / 100% ОТДЫХА ==="  -- 100% rested XP message alert / Сообщение при 100% rested XP
-local noRestedMsg = "=== NO RESTED XP / НЕТ ОТДЫХА ==="      -- 0% rested XP message alert / Сообщение при 0% rested XP
-local chatChannel = "EMOTE"                       -- Announce channel / Канал анонса ("EMOTE", "SAY", "PARTY", "RAID", "GUILD" или "YELL")
-local notifyIntervalZero = 20                    -- Interval between 0% alerts (seconds) / Интервал между оповещениями о 0% (сек)
-local notifyCountZero = 3                        -- Max 0% alerts in a row / Максимум оповещений о 0% подряд
-local playSound = true                           -- Play sound on alert / Воспроизводить звук при оповещении
-local soundNameFull = "QUESTCOMPLETED"                -- Sound for 100% rested XP / Звук для 100%
-local soundNameZero = "RaidWarning"         -- Sound for 0% rested XP / Звук для 0%
-local showCenter = true                          -- Show alert in center / Показывать оповещение по центру экрана
-local maxLevel = 60                              -- Max player level / Максимальный уровень игрока
-local centerMessageTime = 3 -- Time to show center message (seconds) / Время показа сообщения по центру (сек)
+
+-- 0% rested XP message alert / Сообщение при 0% rested XP
+local noRestedMsg = "=== NO RESTED XP / НЕТ ОТДЫХА ==="
+
+-- 100% rested XP message alert / Сообщение при 100% rested XP
+local fullRestedMsg = "=== 100% RESTED XP / 100% ОТДЫХА ==="
+
+-- Announce channel / Канал анонса ("EMOTE", "SAY", "PARTY", "RAID", "GUILD" или "YELL")
+local chatChannel = "EMOTE"
+
+-- Max 0% alerts in a row / Максимум оповещений о 0% подряд
+local notifyCountZero = 3
+
+-- Interval between 0% alerts (seconds) / Интервал между оповещениями о 0% (сек)
+local notifyIntervalZero = 20
+
+-- Show alert in center / Показывать оповещение по центру экрана
+local showCenter = true
+
+-- Time to show center message (seconds) / Время показа сообщения по центру (сек)
+local centerMessageTime = 3
+
+-- Play sound on alert / Воспроизводить звук при оповещении
+local playSound = true
+
+-- Sound for 0% rested XP / Звук для 0%
+local soundNameZero = "RaidWarning"
+
+-- Sound for 100% rested XP / Звук для 100%
+local soundNameFull = "QUESTCOMPLETED"
+
+-- Max player level / Максимальный уровень игрока
+local maxLevel = 60
 
 -- INTERNAL STATE / ВНУТРЕННЕЕ СОСТОЯНИЕ
 local lastZeroRestedTime = 0
@@ -43,10 +65,11 @@ local function GetRestedXPPercent()
         return nil
     end
     local percent = (exhaustion / (maxXP * 1.5)) * 100
-    return math.min(percent, 100) -- Защита от значений > 100%
+    -- Protection from values > 100% / Защита от значений > 100%
+    return math.min(percent, 100)
 end
 
--- Защита от повторного создания фрейма
+-- Protection from repeated frame creation / Защита от повторного создания фрейма
 if T_RestedXP_MessageFrame then
     T_RestedXP_MessageFrame:Hide()
     T_RestedXP_MessageFrame = nil
@@ -56,30 +79,29 @@ end
 local restedXPMessageFrame = CreateFrame("Frame", "T_RestedXP_MessageFrame", UIParent)
 restedXPMessageFrame:SetWidth(800)
 restedXPMessageFrame:SetHeight(120)
-restedXPMessageFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 180) -- поднято вверх
+restedXPMessageFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 180)
 restedXPMessageFrame:Hide()
 
 local restedXPFontString = restedXPMessageFrame:CreateFontString(nil, "OVERLAY")
--- Добавь проверку перед установкой шрифта
 local fontPath = "Interface\\AddOns\\T-RestedXP\\fonts\\ARIALN.ttf"
 if not restedXPFontString:SetFont(fontPath, 96, "OUTLINE") then
-    -- Фоллбэк на стандартный шрифт
+    -- Fallback to default font / Фоллбэк на стандартный шрифт
     restedXPFontString:SetFont("Fonts\\FRIZQT__.TTF", 96, "OUTLINE")
 end
 restedXPFontString:SetPoint("CENTER", restedXPMessageFrame, "CENTER", 0, 0)
 restedXPFontString:SetTextColor(1, 1, 0)
 
 local function ShowRestedXPMessage(msg)
-    -- Сброс предыдущего состояния
+    -- Reset previous state / Сброс предыдущего состояния
     restedXPMessageFrame:SetScript("OnUpdate", nil)
     restedXPMessageFrame:Hide()
     
-    -- Установка нового сообщения и состояния
+    -- Set new message and state / Установка нового сообщения и состояния
     restedXPFontString:SetText(msg)
     restedXPMessageFrame:SetAlpha(1)
     restedXPMessageFrame:Show()
 
-    -- Сохраняем время начала показа
+    -- Save start time / Сохраняем время начала показа
     restedXPMessageFrame.startTime = GetTime()
     restedXPMessageFrame.showDuration = centerMessageTime
     restedXPMessageFrame.fadeDuration = 1
@@ -90,12 +112,12 @@ local function ShowRestedXPMessage(msg)
         local totalDuration = restedXPMessageFrame.showDuration + restedXPMessageFrame.fadeDuration
 
         if timeElapsed >= totalDuration then
-            -- Время вышло, скрываем фрейм
+            -- Time is up, hide frame / Время вышло, скрываем фрейм
             restedXPMessageFrame:Hide()
             restedXPMessageFrame:SetScript("OnUpdate", nil)
             restedXPMessageFrame.startTime = nil
         elseif timeElapsed >= restedXPMessageFrame.showDuration then
-            -- Фаза затухания
+            -- Fade phase / Фаза затухания
             local fadeProgress = (timeElapsed - restedXPMessageFrame.showDuration) / restedXPMessageFrame.fadeDuration
             restedXPMessageFrame:SetAlpha(1 - fadeProgress)
         end
@@ -107,7 +129,7 @@ local function SendRestedAlert(msg, soundName)
     if chatChannel == "SELF" then
         DEFAULT_CHAT_FRAME:AddMessage(msg)
     elseif chatChannel then
-        -- Проверка на валидность канала
+        -- Check channel validity / Проверка на валидность канала
         local validChannels = {"EMOTE", "SAY", "PARTY", "RAID", "GUILD", "YELL"}
         local isValidChannel = false
         for _, channel in ipairs(validChannels) do
@@ -228,7 +250,7 @@ SlashCmdList["TRESTEDXPTESTFULL"] = function()
     DEFAULT_CHAT_FRAME:AddMessage("Test: forced 100% rested XP / Тест: принудительно 100% отдыха")
 end
 
--- Cleanup при выгрузке аддона
+-- Cleanup on addon unload / Cleanup при выгрузке аддона
 local cleanupFrame = CreateFrame("Frame")
 cleanupFrame:RegisterEvent("ADDON_LOADED")
 cleanupFrame:RegisterEvent("PLAYER_LOGOUT")
