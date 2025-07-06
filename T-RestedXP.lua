@@ -19,7 +19,7 @@ local noRestedMsg = "=== NO RESTED XP / НЕТ ОТДЫХА ==="
 -- 100% rested XP message alert / Сообщение при 100% rested XP
 local fullRestedMsg = "=== 100% RESTED XP / 100% ОТДЫХА ==="
 
--- Announce channel / Канал анонса ("EMOTE", "SAY", "PARTY", "RAID", "GUILD" или "YELL")
+-- Announce channel / Канал анонса ("SELF", "EMOTE", "SAY", "PARTY", "RAID", "GUILD")
 local chatChannel = "EMOTE"
 
 -- Max 0% alerts in a row / Максимум оповещений о 0% подряд

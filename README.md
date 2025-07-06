@@ -30,7 +30,7 @@ EN: The addon announces when you reach 100% rested XP or 0% rested XP. You can c
 
 - `fullRestedMsg`: message for 100% rested XP (default: `=== 100% RESTED XP / 100% ОТДЫХА ===`)
 - `noRestedMsg`: message for 0% rested XP (default: `=== NO RESTED XP / НЕТ ОТДЫХА ===`)
-- `chatChannel`: channel for alerts (`SELF`, `EMOTE`, `SAY`, `PARTY`, `RAID`, `GUILD`, `YELL`)
+- `chatChannel`: channel for alerts (`SELF`, `EMOTE`, `SAY`, `PARTY`, `RAID`, `GUILD`)
 - `notifyIntervalZero`: interval between 0% alerts (seconds)
 - `notifyCountZero`: max 0% alerts in a row
 - `playSound`: play sound on alert (true/false)
@@ -44,7 +44,7 @@ RU: Аддон сообщает, когда вы достигаете 100% ил�
 
 - `fullRestedMsg`: сообщение для 100% rested XP (по умолчанию: `=== 100% RESTED XP / 100% ОТДЫХА ===`)
 - `noRestedMsg`: сообщение для 0% rested XP (по умолчанию: `=== NO RESTED XP / НЕТ ОТДЫХА ===`)
-- `chatChannel`: канал оповещений (`SELF`, `EMOTE`, `SAY`, `PARTY`, `RAID`, `GUILD`, `YELL`)
+- `chatChannel`: канал оповещений (`SELF`, `EMOTE`, `SAY`, `PARTY`, `RAID`, `GUILD`)
 - `notifyIntervalZero`: интервал между оповещениями о 0% (сек)
 - `notifyCountZero`: максимум оповещений о 0% подряд
 - `playSound`: воспроизводить звук при оповещении (true/false)
