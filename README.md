@@ -1,8 +1,8 @@
 # T-RestedXP: About / Описание
 
-EN: **T-RestedXP** is a simple addon for tracking 100% rested XP in WoW 1.12 (Turtle WoW).
+EN: **T-RestedXP** is a simple addon for tracking 0% and 100% rested XP in WoW 1.12 (Turtle WoW).
 
-RU: **T-RestedXP** — это простой аддон для отслеживания 100% rested XP в WoW 1.12 (Turtle WoW).
+RU: **T-RestedXP** — это простой аддон для отслеживания 0% и 100% rested XP в WoW 1.12 (Turtle WoW).
 
 ---
 
