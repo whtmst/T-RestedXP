@@ -12,9 +12,9 @@ Compatibility:
 --]]
 
 -- SETTINGS / НАСТРОЙКИ
-local fullRestedMsg = "=== 100% RESTED XP! ==="  -- 100% rested XP message alert / Сообщение при 100% rested XP
-local noRestedMsg = "=== 0% RESTED XP! ==="      -- 0% rested XP message alert / Сообщение при 0% rested XP
-local chatChannel = "SELF"                       -- Announce channel / Канал анонса ("SELF", "SAY", "PARTY", "RAID", "GUILD" или "YELL")
+local fullRestedMsg = "=== 100% RESTED XP / 100% ОТДЫХА ==="  -- 100% rested XP message alert / Сообщение при 100% rested XP
+local noRestedMsg = "=== NO RESTED XP / НЕТ ОТДЫХА ==="      -- 0% rested XP message alert / Сообщение при 0% rested XP
+local chatChannel = "EMOTE"                       -- Announce channel / Канал анонса ("EMOTE", "SAY", "PARTY", "RAID", "GUILD" или "YELL")
 local notifyIntervalFull = 60                    -- Interval between 100% alerts (seconds) / Интервал между оповещениями о 100% (сек)
 local notifyIntervalZero = 20                    -- Interval between 0% alerts (seconds) / Интервал между оповещениями о 0% (сек)
 local notifyCountZero = 3                        -- Max 0% alerts in a row / Максимум оповещений о 0% подряд
@@ -135,6 +135,27 @@ SlashCmdList["TRESTEDXP"] = function()
             UIErrorsFrame:AddMessage(msg, 1, 0, 0, 1, 3)
         end
     end
+end
+
+-- ПРАВИЛЬНО
+-- Slash command for test 0% rested XP / Слэш-команда для теста 0% rested XP
+SLASH_TRESTEDXPTESTZERO1 = "/trestedxp-test-0"
+SlashCmdList["TRESTEDXPTESTZERO"] = function()
+    local oldGetRestedXPPercent = GetRestedXPPercent
+    GetRestedXPPercent = function() return 0 end
+    CheckRestedXP()
+    GetRestedXPPercent = oldGetRestedXPPercent
+    DEFAULT_CHAT_FRAME:AddMessage("Test: forced 0% rested XP / Тест: принудительно 0% отдыха")
+end
+
+-- Slash command for test 100% rested XP / Слэш-команда для теста 100% rested XP
+SLASH_TRESTEDXPTESTFULL1 = "/trestedxp-test-100"
+SlashCmdList["TRESTEDXPTESTFULL"] = function()
+    local oldGetRestedXPPercent = GetRestedXPPercent
+    GetRestedXPPercent = function() return 100 end
+    CheckRestedXP()
+    GetRestedXPPercent = oldGetRestedXPPercent
+    DEFAULT_CHAT_FRAME:AddMessage("Test: forced 100% rested XP / Тест: принудительно 100% отдыха")
 end
 
 -- End of file / Конец
