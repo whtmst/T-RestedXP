@@ -35,7 +35,7 @@
       "getmetatable",
       "setmetatable"
    ],
-   "runtime.version": "Lua 5.1",
+   "runtime.version": "Lua 5.0",
    "type.inferParamType": true,
-   "workspace.library": ["wow-api-type-definitions"]
+   "workspace.library": ["T-RestedXP"]
 }

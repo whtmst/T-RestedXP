@@ -1,6 +1,3 @@
-# Lua Language Server type definitions
-wow-api-type-definitions/
-
 # GitHub configuration and workflows
 .github/
 tests/
